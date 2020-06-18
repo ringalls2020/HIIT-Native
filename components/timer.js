@@ -15,7 +15,7 @@ import {
   faPlayCircle,
   faUndo,
 } from "@fortawesome/free-solid-svg-icons";
-import Sound from "react-native-sound";
+import { Audio } from "expo-av";
 
 export default function Timer(props) {
   const { navigation, route } = props;
@@ -25,16 +25,38 @@ export default function Timer(props) {
   const [play, setPlay] = useState(true);
   const [reset, setReset] = useState(false);
   const [i, setI] = useState(0);
+  const bell = require("./sounds/bell.mp3");
+
+  handlePlaySound = async () => {
+    const soundObject = new Audio.Sound();
+
+    try {
+      await soundObject.loadAsync(bell);
+      await soundObject
+        .playAsync()
+        .then(async (playbackStatus) => {
+          setTimeout(() => {
+            soundObject.unloadAsync();
+          }, playbackStatus.playableDurationMillis);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const handleComplete = () => {
+    handlePlaySound();
     if (i < array.length) {
       setI(i + 1);
       setTime(array[i]);
       setKey(i);
       console.log({ i });
-      return [true, 0];
+      return [true, 1];
     } else {
-      navigation.navigate("Workout Complete");
+      navigation.navigate("Workout Complete", { title: title });
     }
   };
 
